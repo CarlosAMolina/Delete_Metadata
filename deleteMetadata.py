@@ -14,7 +14,7 @@ from pyCreateFolderIfNotExists import pyCreateFolderIfNotExists
 from pyDeleteFilesMetadata import pyDeleteFilesMetadata
 from pyDeleteFileMetadata import pyDeleteFileMetadata
 from pyDeleteFiles import pyDeleteFiles
-from pyMoveOriginalFiles import pyMoveOriginalFiles
+from pyMoveFiles import pyMoveFiles
 
 ########################################################################
 # delete metadata for all files (or only one) in indicated folder
@@ -59,7 +59,7 @@ def moveORdeleteOriginalFiles(imagesPath,filesName,deleteMetadataResults):
 		if optionOriginalFiles == 1: # move original images
 			pyCreateFolderIfNotExists(imagesPath, folder2moveName) # create folder where move the images
 			folder2movePath = imagesPath+folder2moveName
-			pyMoveOriginalFiles(imagesPath,filesOriginal,imagesPath,folder2moveName)
+			pyMoveFiles(imagesPath,filesOriginal,imagesPath,folder2moveName)
 			print 'Files moved to originalImages folder'
 		elif optionOriginalFiles == 2:
 			pyDeleteFiles(imagesPath,filesOriginal)
