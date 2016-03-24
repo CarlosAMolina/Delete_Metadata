@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-from pyCheckFolderExists import pyCheckFolderExists
+from pyCheckFileORFolderExists import pyCheckFileORFolderExists
 from pyCommandLine import pyCommandLine
 
 def pyCreateFolderIfNotExists(newFolderPath, folderName):
-	if pyCheckFolderExists(newFolderPath, folderName) == -1:
+	if pyCheckFileORFolderExists(newFolderPath, folderName, 'folder') == -1:
 		foderPathAndName = newFolderPath+'/'+folderName
 		command = ['mkdir',foderPathAndName]
 		print 'New folder has been created: '+str(folderName)

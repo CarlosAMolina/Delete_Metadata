@@ -91,7 +91,7 @@ if optionMetadata == 1:
 		deleteMetadataResults = pyDeleteFilesMetadata(imagesPath,allFilesName) # save when file metadata was deleted correctly
 elif optionMetadata == 2:
 	imagePath = raw_input('Complete route of the folder with the image (/../../..):\n>>> ')
-	imageName = raw_input('Name of the image:\n>>> ')
+	imageName = raw_input('Complete name of the image:\n>>> ')
 	if pyCheckFileORFolderExists(imagePath,imageName,'file') == -1:
 		print "ERROR: image doesn't exists"
 		continueDeletingMetadata == -1
