@@ -17,13 +17,13 @@ Run the script. It guides you with some questions.
 
 ### Usage example
 
-1. In terminal execute the script.
+1 In terminal execute the script.
 
 ```
 $ python '/home/carlos/Escritorio/funciones/deleteMetadata.py'
 ```
 
-2. Now the script guides you with questions.
+2 Now the script guides you with questions.
 
 ```
 $ python '/home/carlos/Escritorio/funciones/deleteMetadata.py' 
