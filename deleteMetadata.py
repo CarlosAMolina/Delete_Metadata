@@ -11,9 +11,12 @@ from otherFunctions import *
 from pyCheckFileORFolderExists import pyCheckFileORFolderExists
 from pyConvert2List import pyConvert2List
 from pyCreateFolderIfNotExists import pyCreateFolderIfNotExists
+from pyDeleteCommasPath import pyDeleteCommasPath
 from pyDeleteFilesMetadata import pyDeleteFilesMetadata
 from pyDeleteFileMetadata import pyDeleteFileMetadata
 from pyDeleteFiles import pyDeleteFiles
+from pyGetArchivesNameInPath import pyGetArchivesNameInPath
+from pyGetFilesNameInPath import pyGetFilesNameInPath
 from pyMoveFiles import pyMoveFiles
 
 ########################################################################
@@ -32,6 +35,14 @@ def ask4DeleteOption():
 		else:
 			optionMetadata = ""
 
+def ask4FolderPath():
+	folderPath = raw_input('Complete route of the folder with images (/../../..):\n>>> ')
+	return folderPath
+
+def ask4ImageName():
+	imageName = raw_input('Complete name of the image:\n>>> ')
+	return imageName
+
 def ask4MoveORdelete():
 	optionMoveORdelete = ""
 	while optionMoveORdelete == "":
@@ -41,31 +52,51 @@ def ask4MoveORdelete():
 		else:
 			optionMoveORdelete = ""
 
-
-def moveORdeleteOriginalFiles(imagesPath,filesName,deleteMetadataResults):
+def moveORdeleteOriginalFiles(folderPath,filesName,deleteMetadataResults):
 	# move orignal images with metadata or delete it
-	if len(filesName) != 0:
-		# initialice variables
-		filesOriginal = [] # original images. Images with metadata. Their matadata had been deleted and new images without metadata have been created
-		folder2moveName = 'originalImages' # name of the folder where to save original images
-		folder2movePath = ''
-		# save files
-		for index, result in enumerate(deleteMetadataResults):
-			if result == 1: # work only with modified images
-				fileNoMetadata = filesName[index]
-				filesOriginal.append(fileNoMetadata + '_original') # when deleting metadata, original files (images with metadata) are saved as old name + _original at the end
-		# move or delete
-		optionOriginalFiles = ask4MoveORdelete()
-		if optionOriginalFiles == 1: # move original images
-			pyCreateFolderIfNotExists(imagesPath, folder2moveName) # create folder where move the images
-			folder2movePath = imagesPath+folder2moveName
-			pyMoveFiles(imagesPath,filesOriginal,imagesPath,folder2moveName)
-			print 'Files moved to originalImages folder'
-		elif optionOriginalFiles == 2:
-			pyDeleteFiles(imagesPath,filesOriginal)
+	# initialice variables
+	filesOriginal = [] # original images. Images with metadata. Their matadata had been deleted and new images without metadata have been created
+	folder2moveName = 'originalImages' # name of the folder where to save original images
+	folder2movePath = ''
+	# save files
+	for index, result in enumerate(deleteMetadataResults):
+		if result == 1: # work only with modified images
+			fileNoMetadata = filesName[index]
+			filesOriginal.append(fileNoMetadata + '_original') # when deleting metadata, original files (images with metadata) are saved as old name + _original at the end
+	# move or delete
+	optionOriginalFiles = ask4MoveORdelete()
+	if optionOriginalFiles == 1: # move original images
+		pyCreateFolderIfNotExists(folderPath, folder2moveName) # create folder where move the images
+		folder2movePath = folderPath+folder2moveName
+		pyMoveFiles(folderPath,filesOriginal,folderPath,folder2moveName)
+		print 'Files moved to originalImages folder'
+	elif optionOriginalFiles == 2:
+		pyDeleteFiles(folderPath,filesOriginal)
 
+def checkFolderPathSyntax(archivesInPath):
+	if allArchivesInPath != -1:
+		return 1
+	else:
+		print 'ERROR: folder path invalid syntax'
+		return -1
 
-# main
+def checkAnyArchive(archivesInPath):
+	if allArchivesInPath != []:
+		return 1
+	else:
+		print 'ERROR: folder is empty, no images'
+		return -1
+
+def checkImageExists(imagePath,imageName):
+	if pyCheckFileORFolderExists(imagePath,imageName,'file') == -1:
+		print "ERROR: image doesn't exist"
+		return -1
+	else:
+		return 1
+
+# main #
+########
+
 # delete metadata of all images in a folder or only one image
 
 allFilesName = []
@@ -73,37 +104,30 @@ deleteMetadataResults = [] # know when metadata has been deleted
 continueDeletingMetadata = "" # know if some error occurs
 
 optionMetadata = ask4DeleteOption()
-if optionMetadata == 1:
-	imagesPath = raw_input('Complete route of the folder with images (/../../..):\n>>> ')
-	# all files at indicated folder
-	try:
-		allArchivesInPath = listdir(imagesPath) # all archives, example: folders, files, etc
-	except:
-		continueDeletingMetadata = -1
-	if continueDeletingMetadata == -1:
-		print 'ERROR: images path invalid syntax'
-	elif allArchivesInPath == []:
-		print 'ERROR: folder is empty, no images'
-		continueDeletingMetadata = -1
-	else:
-		allFilesName = [file for file in allArchivesInPath if isfile(join(imagesPath,file))] # get only files
+
+# folder with image or images
+folderPath = ask4FolderPath()
+folderPath = pyDeleteCommasPath(folderPath) # '/usr/desktop' -> usr/desktop
+
+allArchivesInPath = pyGetArchivesNameInPath(folderPath)
+continueDeletingMetadata = checkFolderPathSyntax(allArchivesInPath)
+continueDeletingMetadata = checkAnyArchive(allArchivesInPath)
+if continueDeletingMetadata == 1:
+	if optionMetadata == 1:
+		allFilesName = pyGetFilesNameInPath(folderPath,allArchivesInPath) # get only files
 		# delete metadata
-		deleteMetadataResults = pyDeleteFilesMetadata(imagesPath,allFilesName) # save when file metadata was deleted correctly
-elif optionMetadata == 2:
-	imagePath = raw_input('Complete route of the folder with the image (/../../..):\n>>> ')
-	imageName = raw_input('Complete name of the image:\n>>> ')
-	if pyCheckFileORFolderExists(imagePath,imageName,'file') == -1:
-		print "ERROR: image doesn't exists"
-		continueDeletingMetadata == -1
-	else:
-		continueDeletingMetadata = pyDeleteFileMetadata(imagePath, imageName)
+		deleteMetadataResults = pyDeleteFilesMetadata(folderPath,allFilesName) # save when file metadata was deleted correctly
+	elif optionMetadata == 2:
+		imageName = ask4ImageName()
+		continueDeletingMetadata = checkImageExists(folderPath, imageName)
 		if continueDeletingMetadata == 1:
-			deleteMetadataResults = pyConvert2List(continueDeletingMetadata)
-			allFilesName.append(imageName)
-			imagesPath = imagePath
+			continueDeletingMetadata = pyDeleteFileMetadata(folderPath, imageName)
+			if continueDeletingMetadata == 1:
+				deleteMetadataResults = pyConvert2List(continueDeletingMetadata)
+				allFilesName.append(imageName)
 if 1 not in deleteMetadataResults: # no file has been changed
 	print 'No file has been changed'
 	continueDeletingMetadata = -1
 if continueDeletingMetadata != -1:
-	moveORdeleteOriginalFiles(imagesPath,allFilesName,deleteMetadataResults)
+	moveORdeleteOriginalFiles(folderPath,allFilesName,deleteMetadataResults)
 print 'Process completed'

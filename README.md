@@ -40,3 +40,6 @@ New folder has been created: originalImages
 Files moved to originalImages folder
 Process completed
 ```
+
+Note: when the script asks for the path you can drop the folder to terminal.
+
