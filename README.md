@@ -8,6 +8,8 @@ Written in Python.
 
 - Install ExifTool.
 
+- Copy scripts to otherFunctions folder (see that folder's README).
+
 - Tested in Ubuntu.
 
 
