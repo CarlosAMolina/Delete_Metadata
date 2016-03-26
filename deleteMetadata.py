@@ -17,6 +17,7 @@ from pyDeleteFileMetadata import pyDeleteFileMetadata
 from pyDeleteFiles import pyDeleteFiles
 from pyGetArchivesNameInPath import pyGetArchivesNameInPath
 from pyGetFilesNameInPath import pyGetFilesNameInPath
+from pyGetImageNameFromPathAndName import pyGetImageNameFromPathAndName
 from pyMoveFiles import pyMoveFiles
 
 ########################################################################
@@ -36,11 +37,15 @@ def ask4DeleteOption():
 			optionMetadata = ""
 
 def ask4FolderPath():
-	folderPath = raw_input('Complete route of the folder with images (/../../..):\n>>> ')
+	folderPath = ""
+	while folderPath == "":
+		folderPath = raw_input('Complete route of the folder with images (/../../..) or to the image:\n>>> ')
 	return folderPath
 
 def ask4ImageName():
-	imageName = raw_input('Complete name of the image:\n>>> ')
+	imageName = ""
+	while imageName == "":
+		imageName = raw_input('Complete name of the image:\n>>> ')
 	return imageName
 
 def ask4MoveORdelete():
@@ -73,10 +78,21 @@ def moveORdeleteOriginalFiles(folderPath,filesName,deleteMetadataResults):
 	elif optionOriginalFiles == 2:
 		pyDeleteFiles(folderPath,filesOriginal)
 
-def checkFolderPathSyntax(archivesInPath):
+def checkFolderPathSyntax(archivesInPath, optionMetadata, folderPath):
+	# check if the folder path is correct. If the option is for working with only one image, this method checks if the images exists
+	error = -1
 	if allArchivesInPath != -1:
 		return 1
 	else:
+		if optionMetadata == 2: # work with only one image
+			imageExists = checkImageExists(folderPath, None)
+			if imageExists == 1:
+				return [1,1]
+			else:
+				error = 1
+		else:
+			error = 1
+	if error == 1:
 		print 'ERROR: folder path invalid syntax'
 		return -1
 
@@ -94,6 +110,7 @@ def checkImageExists(imagePath,imageName):
 	else:
 		return 1
 
+
 # main #
 ########
 
@@ -102,6 +119,7 @@ def checkImageExists(imagePath,imageName):
 allFilesName = []
 deleteMetadataResults = [] # know when metadata has been deleted
 continueDeletingMetadata = "" # know if some error occurs
+imageNameInPath = "" # folder's path contains the image name
 
 optionMetadata = ask4DeleteOption()
 
@@ -110,7 +128,10 @@ folderPath = ask4FolderPath()
 folderPath = pyDeleteCommasPath(folderPath) # '/usr/desktop' -> usr/desktop
 
 allArchivesInPath = pyGetArchivesNameInPath(folderPath)
-continueDeletingMetadata = checkFolderPathSyntax(allArchivesInPath)
+continueDeletingMetadata = checkFolderPathSyntax(allArchivesInPath, optionMetadata, folderPath)
+if len(pyConvert2List(continueDeletingMetadata)) == 2: # len(intType) = error -> list type is necessary
+	imageNameInPath = 1
+	continueDeletingMetadata = 1 # [1,1] -> 1
 if continueDeletingMetadata == 1:
 	continueDeletingMetadata = checkAnyArchive(allArchivesInPath)
 	if continueDeletingMetadata == 1:
@@ -119,13 +140,18 @@ if continueDeletingMetadata == 1:
 			# delete metadata
 			deleteMetadataResults = pyDeleteFilesMetadata(folderPath,allFilesName) # save when file metadata was deleted correctly
 		elif optionMetadata == 2:
-			imageName = ask4ImageName()
-			continueDeletingMetadata = checkImageExists(folderPath, imageName)
+			if imageNameInPath == 1:
+				imageNameAndPath = folderPath
+				folderPath, imageName = pyGetImageNameFromPathAndName(imageNameAndPath)
+				# continueDeletingMetadata checked for this case before
+			else:
+				imageName = ask4ImageName()
+				continueDeletingMetadata = checkImageExists(folderPath, imageName)
 			if continueDeletingMetadata == 1:
 				continueDeletingMetadata = pyDeleteFileMetadata(folderPath, imageName)
-				if continueDeletingMetadata == 1:
-					deleteMetadataResults = pyConvert2List(continueDeletingMetadata)
-					allFilesName.append(imageName)
+			if continueDeletingMetadata == 1:
+				deleteMetadataResults = pyConvert2List(continueDeletingMetadata)
+				allFilesName.append(imageName)
 if 1 not in deleteMetadataResults: # no file has been changed
 	print 'No file has been changed'
 	continueDeletingMetadata = -1
