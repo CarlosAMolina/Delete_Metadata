@@ -111,20 +111,21 @@ folderPath = pyDeleteCommasPath(folderPath) # '/usr/desktop' -> usr/desktop
 
 allArchivesInPath = pyGetArchivesNameInPath(folderPath)
 continueDeletingMetadata = checkFolderPathSyntax(allArchivesInPath)
-continueDeletingMetadata = checkAnyArchive(allArchivesInPath)
 if continueDeletingMetadata == 1:
-	if optionMetadata == 1:
-		allFilesName = pyGetFilesNameInPath(folderPath,allArchivesInPath) # get only files
-		# delete metadata
-		deleteMetadataResults = pyDeleteFilesMetadata(folderPath,allFilesName) # save when file metadata was deleted correctly
-	elif optionMetadata == 2:
-		imageName = ask4ImageName()
-		continueDeletingMetadata = checkImageExists(folderPath, imageName)
-		if continueDeletingMetadata == 1:
-			continueDeletingMetadata = pyDeleteFileMetadata(folderPath, imageName)
+	continueDeletingMetadata = checkAnyArchive(allArchivesInPath)
+	if continueDeletingMetadata == 1:
+		if optionMetadata == 1:
+			allFilesName = pyGetFilesNameInPath(folderPath,allArchivesInPath) # get only files
+			# delete metadata
+			deleteMetadataResults = pyDeleteFilesMetadata(folderPath,allFilesName) # save when file metadata was deleted correctly
+		elif optionMetadata == 2:
+			imageName = ask4ImageName()
+			continueDeletingMetadata = checkImageExists(folderPath, imageName)
 			if continueDeletingMetadata == 1:
-				deleteMetadataResults = pyConvert2List(continueDeletingMetadata)
-				allFilesName.append(imageName)
+				continueDeletingMetadata = pyDeleteFileMetadata(folderPath, imageName)
+				if continueDeletingMetadata == 1:
+					deleteMetadataResults = pyConvert2List(continueDeletingMetadata)
+					allFilesName.append(imageName)
 if 1 not in deleteMetadataResults: # no file has been changed
 	print 'No file has been changed'
 	continueDeletingMetadata = -1
